@@ -9,7 +9,11 @@ export namespace AuthApi {
 
   /** 登录接口返回值 */
   export interface LoginResult {
-    accessToken: string;
+    access_token: string;
+    token_type: string; // 添加token类型字段
+    expires_in: number; // 添加过期时间字段
+    scope: string; // 添加scope字段
+    refresh_token?: string; // 可选的刷新令牌字段
   }
 
   export interface RefreshTokenResult {
@@ -22,7 +26,20 @@ export namespace AuthApi {
  * 登录
  */
 export async function loginApi(data: AuthApi.LoginParams) {
-  return requestClient.post<AuthApi.LoginResult>('/auth/login', data);
+  const params = {
+    grant_type: 'password',
+    client_id: 'my-client',
+    client_secret: 'your-client-secret',
+    username: data.username,
+    password: data.password,
+    scp: 'email',
+    ...data,
+  };
+  return requestClient.post<AuthApi.LoginResult>('/connect/token', params, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  });
 }
 
 /**
@@ -47,5 +64,6 @@ export async function logoutApi() {
  * 获取用户权限码
  */
 export async function getAccessCodesApi() {
-  return requestClient.get<string[]>('/auth/codes');
+  // return requestClient.get<string[]>('/auth/codes');
+  return [];
 }

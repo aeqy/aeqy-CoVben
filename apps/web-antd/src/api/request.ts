@@ -74,9 +74,26 @@ function createRequestClient(baseURL: string) {
     fulfilled: (response) => {
       const { data: responseData, status } = response;
 
-      const { code, data } = responseData;
-      if (status >= 200 && status < 400 && code === 0) {
-        return data;
+      // TODO 状态码处理
+      // const { code, data } = responseData;
+      // if (status >= 200 && status < 400 && code === 0) {
+      //   return data;
+      // }
+
+      // 检查HTTP状态码是否在成功范围内
+      if (status >= 200 && status < 400) {
+        // 如果响应中有顶级字段如 access_token 等，则直接返回整个响应数据
+        if ('access_token' in responseData || 'refresh_token' in responseData) {
+          return responseData;
+        }
+
+        // 如果存在 code 字段，检查业务逻辑是否成功
+        if ('code' in responseData && responseData.code === 0) {
+          return responseData.data; // 返回嵌套的数据
+        }
+
+        // 默认情况下返回整个响应数据
+        return responseData;
       }
 
       throw Object.assign({}, response, { response });
